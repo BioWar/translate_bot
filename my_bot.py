@@ -80,19 +80,19 @@ def inlinequery(bot, update):
             title="Translate en->ru",
             input_message_content=InputTextMessageContent(
                 "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='ru', src='en')),
-                parse_mode=ParseMode.MARKDOWN)),
-        InlineQueryResultArticle(
-            id=uuid4(),
-            title="Translate ru->en",
-            input_message_content=InputTextMessageContent(
-                "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='en', src='ru')),
-                parse_mode=ParseMode.MARKDOWN)),
-        InlineQueryResultArticle(
-            id=uuid4(),
-            title="Translate xx->ru",
-            input_message_content=InputTextMessageContent(
-                "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='ru', src='auto')),
-                parse_mode=ParseMode.MARKDOWN))]
+                parse_mode=ParseMode.MARKDOWN)),]
+        #InlineQueryResultArticle(
+        #    id=uuid4(),
+        #    title="Translate ru->en",
+        #    input_message_content=InputTextMessageContent(
+        #        "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='en', src='ru')),
+        #        parse_mode=ParseMode.MARKDOWN)),
+        #InlineQueryResultArticle(
+        #    id=uuid4(),
+        #    title="Translate xx->ru",
+        #    input_message_content=InputTextMessageContent(
+        #        "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='ru', src='auto')),
+        #        parse_mode=ParseMode.MARKDOWN))]
     
     update.inline_query.answer(results)
 
