@@ -12,7 +12,11 @@ from telegram.utils.helpers import escape_markdown
 from telegram import InlineQueryResultArticle, ParseMode, \
     InputTextMessageContent
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
+from PyPDF2 import PdfFileReader
 import logging
+
+
+
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -67,10 +71,45 @@ def start(bot, update):
     update.message.reply_text('Hi, I\'m the Bot which translate text inline, with my inline call @TranslatePV7103_bot!')
 
 def help(bot, update):
-    update.message.reply_text('Call /start for instractions.')
+    update.message.reply_text('/start - Greetings;\
+	                           \n/help - Available commands;\
+	                           Echo mode in conversation with me makes possible translation of messages xx => eng. Also sending PDF file (size < 20MB) will be translated and returned as Translation.txt. Inline mode provides such types:\
+	                           \neng => ru\
+	                           \nru  => eng\
+	                           \nxx  => ru.\
+	                           \nNew functions are comming soon.\
+	                           \nThanks for using!')
 
 def echo(bot, update):
     update.message.reply_text(retrive_definition(word=update.message.text, dst='en', src='auto'))
+
+def echo_file(bot, update):
+    user = update.message.from_user
+    file = bot.get_file(update.message.document)
+    file.download('user_file.pdf')
+    with open('user_file.pdf', 'rb') as f:
+        text = []
+        translation = []
+        pdf = PdfFileReader(f)
+        num = pdf.getNumPages()
+        for i in range(num):
+            page = pdf.getPage(i)  
+            some_text = page.extractText()
+            print(some_text)
+            some_translation = retrive_definition(some_text, dst='ru', src='en')
+            print(some_translation)
+            translation.append(some_translation)
+            text.append(some_text)
+    with open('Translation.txt', 'w') as f:
+        for i in range(num):
+            f.write(text[i])
+        f.write('\n\n ===TRANSLATION=== \n\n')
+        for i in range(num):
+            f.write(translation[i])
+    file_send = open('Translation.txt', 'rb')
+    update.message.reply_document(file_send) 
+    os.remove('Translation.txt')
+    os.remove('user_file.pdf')
 
 def inlinequery(bot, update):
     query = update.inline_query.query
@@ -109,6 +148,7 @@ def main():
     dp.add_handler(CommandHandler("help", help))
 	
     dp.add_handler(MessageHandler(Filters.text, echo))
+    dp.add_handler(MessageHandler(Filters.document, echo_file))
     dp.add_handler(InlineQueryHandler(inlinequery))
 
     dp.add_error_handler(error)
