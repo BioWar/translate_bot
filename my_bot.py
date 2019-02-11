@@ -12,7 +12,7 @@ from telegram.utils.helpers import escape_markdown
 from telegram import InlineQueryResultArticle, ParseMode, \
     InputTextMessageContent
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
-from PyPDF2 import PdfFileReader
+#from PyPDF2 import PdfFileReader
 import logging
 
 
@@ -82,7 +82,7 @@ def help(bot, update):
 
 def echo(bot, update):
     update.message.reply_text(retrive_definition(word=update.message.text, dst='en', src='auto'))
-
+'''
 def echo_file(bot, update):
     user = update.message.from_user
     file = bot.get_file(update.message.document)
@@ -110,7 +110,7 @@ def echo_file(bot, update):
     update.message.reply_document(file_send) 
     os.remove('Translation.txt')
     os.remove('user_file.pdf')
-
+'''
 def inlinequery(bot, update):
     query = update.inline_query.query
     results = [
