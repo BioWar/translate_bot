@@ -12,9 +12,9 @@ from telegram.utils.helpers import escape_markdown
 from telegram import InlineQueryResultArticle, ParseMode, \
     InputTextMessageContent
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
-#from PyPDF2 import PdfFileReader
+from PyPDF2 import PdfFileReader
 import logging
-
+from constants import *
 
 
 
@@ -69,6 +69,7 @@ def retrive_definition(word, dst=None, src='auto'):
 
 def start(bot, update):
     update.message.reply_text('Hi, I\'m the Bot which translate text inline, with my inline call @TranslatePV7103_bot!')
+    print(LANGCODES)
 
 def help(bot, update):
     update.message.reply_text('/start - Greetings;\
@@ -76,13 +77,14 @@ def help(bot, update):
 	                           Echo mode in conversation with me makes possible translation of messages xx => eng. Also sending PDF file (size < 20MB) will be translated and returned as Translation.txt. Inline mode provides such types:\
 	                           \neng => ru\
 	                           \nru  => eng\
-	                           \nxx  => ru.\
+	                           \nxx  => ru\
+	                           \nxx  => xx (Start typing text with language code of source language and second word as destination code)\
 	                           \nNew functions are comming soon.\
 	                           \nThanks for using!')
 
 def echo(bot, update):
     update.message.reply_text(retrive_definition(word=update.message.text, dst='en', src='auto'))
-'''
+    
 def echo_file(bot, update):
     user = update.message.from_user
     file = bot.get_file(update.message.document)
@@ -110,9 +112,17 @@ def echo_file(bot, update):
     update.message.reply_document(file_send) 
     os.remove('Translation.txt')
     os.remove('user_file.pdf')
-'''
+    
 def inlinequery(bot, update):
     query = update.inline_query.query
+    custom_dst, custom_src = 'auto', 'auto'
+    text = ' '
+    try:
+        ls = query.split(' ')
+        custom_dst, custom_src = ls[1], ls[0]
+        text = ' '.join(ls[2:])
+    except:
+        pass
     results = [
         InlineQueryResultArticle(
             id=uuid4(),
@@ -131,6 +141,12 @@ def inlinequery(bot, update):
             title="Translate xx->ru",
             input_message_content=InputTextMessageContent(
                 "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='ru', src='auto')),
+                parse_mode=ParseMode.MARKDOWN)),
+        InlineQueryResultArticle(
+            id=uuid4(),
+            title="Translate xx->xx",
+            input_message_content=InputTextMessageContent(
+                "{} .\n".format(retrive_definition(word=text, dst=custom_dst, src=custom_src)),
                 parse_mode=ParseMode.MARKDOWN))]
     
     update.inline_query.answer(results)
@@ -148,7 +164,7 @@ def main():
     dp.add_handler(CommandHandler("help", help))
 	
     dp.add_handler(MessageHandler(Filters.text, echo))
-    #dp.add_handler(MessageHandler(Filters.document, echo_file))
+    dp.add_handler(MessageHandler(Filters.document, echo_file))
     dp.add_handler(InlineQueryHandler(inlinequery))
 
     dp.add_error_handler(error)
