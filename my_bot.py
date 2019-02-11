@@ -148,7 +148,7 @@ def main():
     dp.add_handler(CommandHandler("help", help))
 	
     dp.add_handler(MessageHandler(Filters.text, echo))
-    dp.add_handler(MessageHandler(Filters.document, echo_file))
+    #dp.add_handler(MessageHandler(Filters.document, echo_file))
     dp.add_handler(InlineQueryHandler(inlinequery))
 
     dp.add_error_handler(error)
