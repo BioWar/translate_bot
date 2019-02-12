@@ -123,8 +123,7 @@ def error(bot, update, error):
 
 
 def main():
-    #updater = Updater(os.environ.get('TOKEN'))
-    updater = Updater('644453252:AAGHm2CFGmt96f560xy0PKQYM8qDR9u1Cd4')
+    updater = Updater(os.environ.get('TOKEN'))
     
     dp = updater.dispatcher
 
