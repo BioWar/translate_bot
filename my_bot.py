@@ -1,11 +1,8 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+from translation import *
+from dict_json import *
 
-import sys
-import re
-import html.parser
-import urllib.request
-import urllib.parse
 import os
 from uuid import uuid4
 from telegram.utils.helpers import escape_markdown
@@ -15,60 +12,10 @@ from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHan
 from PyPDF2 import PdfFileReader
 import logging
 from constants import *
-import json
-import difflib
-from difflib import SequenceMatcher
-from difflib import get_close_matches
-
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
 logger = logging.getLogger(__name__)
-
-def unescape(text):
-    if (sys.version_info[0] < 3):
-        parser = HTMLParser.HTMLParser()
-    else:
-        parser = html.parser.HTMLParser()
-    return (parser.unescape(text))
-
-
-def translate(to_translate, to_language="auto", from_language="auto"):
-    
-    agent = {'User-Agent':
-    "Mozilla/4.0 (\
-    compatible;\
-    MSIE 6.0;\
-    Windows NT 5.1;\
-    SV1;\
-    .NET CLR 1.1.4322;\
-    .NET CLR 2.0.50727;\
-    .NET CLR 3.0.04506.30\
-    )"}
-    
-    base_link = "http://translate.google.com/m?hl=%s&sl=%s&q=%s"
-    if (sys.version_info[0] < 3):
-        to_translate = urllib.quote_plus(to_translate)
-        link = base_link % (to_language, from_language, to_translate)
-        request = urllib2.Request(link, headers=agent)
-        raw_data = urllib2.urlopen(request).read()
-    else:
-        to_translate = urllib.parse.quote(to_translate)
-        link = base_link % (to_language, from_language, to_translate)
-        request = urllib.request.Request(link, headers=agent)
-        raw_data = urllib.request.urlopen(request).read()
-    data = raw_data.decode("utf-8")
-    expr = r'class="t0">(.*?)<'
-    re_result = re.findall(expr, data)
-    if (len(re_result) == 0):
-        result = ""
-    else:
-        result = unescape(re_result[0])
-    return (result)
-
-def retrive_definition(word, dst=None, src='auto'):
-	translation = translate(word, dst, src)
-	return translation	
 
 def start(bot, update):
     update.message.reply_text('Hi, I\'m the Bot which translate text inline, with my inline call @TranslatePV7103_bot!')
@@ -82,7 +29,7 @@ def help(bot, update):
 	                           \neng => ru\
 	                           \nru  => eng\
 	                           \nxx  => ru\
-	                           \nxx  => xx (Start typing text with language code of source language and second word as destination code)\
+	                           \nxx  => xx (Example: en ru Hello ==> Привет)\
 	                           \nNew functions are comming soon.\
 	                           \nThanks for using!')
 
@@ -91,7 +38,7 @@ def lang_code(bot, update):
     update.message.reply_document(file_send) 
 
 def echo(bot, update):
-    update.message.reply_text(retrive_definition(word=update.message.text, dst='en', src='auto'))
+    update.message.reply_text(retrive_definition(word=update.message.text, dst='ru', src='auto'))
     
 def echo_file(bot, update):
     user = update.message.from_user
@@ -157,36 +104,17 @@ def inlinequery(bot, update):
     
     update.inline_query.answer(results)
 
-def vocabulary(word):
-	data = json.load(open("data.json"))
-	word = word.lower()
-	if word in data:
-		return data[word]
-	elif word.title() in data:
-		return data[word.title()]
-	elif word.upper() in data:
-		return data[word.upper()]
-	elif len(get_close_matches(word, data.keys())) > 0:
-		action = input("Did you mean %s instead? [y or n]:" % get_close_matches(word, data.keys())[0])
-		if (action == "y"):
-			return data[get_close_matches(word, data.keys())[0]]
-		elif (action == "n"):
-			return ("The word doesn't exist, yet.")
-		else: 
-			return ("We don't understand your entry, Apologies.")
-	else:
-		return ("The word doesn't exist, please double check it.")
-
 def defenition(bot, updater, args, chat_data):
     try:
         word_user = str(args[0])
-        print(word_user)
         output = vocabulary(word_user)
         if type(output) == list:
             for item in output:
                 updater.message.reply_text("-" + str(item))
+        elif output != False:
+            updater.message.reply_text("-" + str(item))
         else:
-                updater.message.reply_text("-" + str(item))
+            updater.message.reply_text('The word doesn\'t exist, please double check it.')                
     except:
         pass
 
@@ -195,7 +123,9 @@ def error(bot, update, error):
 
 
 def main():
-    updater = Updater(os.environ.get('TOKEN'))
+    #updater = Updater(os.environ.get('TOKEN'))
+    updater = Updater('644453252:AAGHm2CFGmt96f560xy0PKQYM8qDR9u1Cd4')
+    
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
