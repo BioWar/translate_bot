@@ -15,7 +15,10 @@ from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHan
 from PyPDF2 import PdfFileReader
 import logging
 from constants import *
-
+import json
+import difflib
+from difflib import SequenceMatcher
+from difflib import get_close_matches
 
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -69,11 +72,12 @@ def retrive_definition(word, dst=None, src='auto'):
 
 def start(bot, update):
     update.message.reply_text('Hi, I\'m the Bot which translate text inline, with my inline call @TranslatePV7103_bot!')
-    print(LANGCODES)
 
 def help(bot, update):
     update.message.reply_text('/start - Greetings;\
 	                           \n/help - Available commands;\
+	                           \n/lang_code - File with available language codes (2.2 Kb);\
+	                           \n/def - Defenition of english word (more than 1 answer);\
 	                           Echo mode in conversation with me makes possible translation of messages xx => eng. Also sending PDF file (size < 20MB) will be translated and returned as Translation.txt. Inline mode provides such types:\
 	                           \neng => ru\
 	                           \nru  => eng\
@@ -81,6 +85,10 @@ def help(bot, update):
 	                           \nxx  => xx (Start typing text with language code of source language and second word as destination code)\
 	                           \nNew functions are comming soon.\
 	                           \nThanks for using!')
+
+def lang_code(bot, update):
+    file_send = open('lang_codes.txt', 'rb')
+    update.message.reply_document(file_send) 
 
 def echo(bot, update):
     update.message.reply_text(retrive_definition(word=update.message.text, dst='en', src='auto'))
@@ -97,9 +105,7 @@ def echo_file(bot, update):
         for i in range(num):
             page = pdf.getPage(i)  
             some_text = page.extractText()
-            print(some_text)
             some_translation = retrive_definition(some_text, dst='ru', src='en')
-            print(some_translation)
             translation.append(some_translation)
             text.append(some_text)
     with open('Translation.txt', 'w') as f:
@@ -151,6 +157,38 @@ def inlinequery(bot, update):
     
     update.inline_query.answer(results)
 
+def vocabulary(word):
+	data = json.load(open("data.json"))
+	word = word.lower()
+	if word in data:
+		return data[word]
+	elif word.title() in data:
+		return data[word.title()]
+	elif word.upper() in data:
+		return data[word.upper()]
+	elif len(get_close_matches(word, data.keys())) > 0:
+		action = input("Did you mean %s instead? [y or n]:" % get_close_matches(word, data.keys())[0])
+		if (action == "y"):
+			return data[get_close_matches(word, data.keys())[0]]
+		elif (action == "n"):
+			return ("The word doesn't exist, yet.")
+		else: 
+			return ("We don't understand your entry, Apologies.")
+	else:
+		return ("The word doesn't exist, please double check it.")
+
+def defenition(bot, updater, args, chat_data):
+    try:
+        word_user = str(args[0])
+        print(word_user)
+        output = vocabulary(word_user)
+        if type(output) == list:
+            for item in output:
+                updater.message.reply_text("-" + str(item))
+        else:
+                updater.message.reply_text("-" + str(item))
+    except:
+        pass
 
 def error(bot, update, error):
     logger.warning('Update "%s" caused error "%s"', update, error)
@@ -162,7 +200,10 @@ def main():
 
     dp.add_handler(CommandHandler("start", start))
     dp.add_handler(CommandHandler("help", help))
-	
+    dp.add_handler(CommandHandler("lang_code", lang_code))
+    dp.add_handler(CommandHandler("def", defenition, 
+                                  pass_args=True,
+                                  pass_chat_data=True))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_handler(MessageHandler(Filters.document, echo_file))
     dp.add_handler(InlineQueryHandler(inlinequery))
