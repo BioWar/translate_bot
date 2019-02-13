@@ -35,7 +35,10 @@ def translate(to_translate, to_language="auto", from_language="auto"):
         to_translate = urllib.parse.quote(to_translate)
         link = base_link % (to_language, from_language, to_translate)
         request = urllib.request.Request(link, headers=agent)
-        raw_data = urllib.request.urlopen(request).read()
+        #*************************************************
+        raw_data = urllib.request.urlopen(request)
+        #*************************************************
+        raw_data = raw_data.read()
     data = raw_data.decode("utf-8")
     expr = r'class="t0">(.*?)<'
     re_result = re.findall(expr, data)
@@ -46,5 +49,5 @@ def translate(to_translate, to_language="auto", from_language="auto"):
     return (result)
     
 def retrive_definition(word, dst=None, src='auto'):
-	translation = translate(word, dst, src)
+	translation = translate(word.encode('utf-8'), dst, src)
 	return translation	

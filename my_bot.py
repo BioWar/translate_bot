@@ -68,14 +68,17 @@ def echo_file(bot, update):
     
 def inlinequery(bot, update):
     query = update.inline_query.query
-    custom_dst, custom_src = 'auto', 'auto'
-    text = ' '
-    try:
-        ls = query.split(' ')
-        custom_dst, custom_src = ls[1], ls[0]
-        text = ' '.join(ls[2:])
-    except:
-        pass
+    
+    #custom_dst, custom_src = 'auto', 'auto'
+    #text = ' '
+    #query = query.encode('utf-8')
+    #try:
+    #    ls = query.split(' ')
+    #    custom_dst, custom_src = ls[1], ls[0]
+    #    text = ' '.join(ls[2:])
+    #except:
+    #    pass
+    
     results = [
         InlineQueryResultArticle(
             id=uuid4(),
@@ -94,13 +97,16 @@ def inlinequery(bot, update):
             title="Translate xx->ru",
             input_message_content=InputTextMessageContent(
                 "{} .\n".format(retrive_definition(word=escape_markdown(query), dst='ru', src='auto')),
-                parse_mode=ParseMode.MARKDOWN)),
-        InlineQueryResultArticle(
-            id=uuid4(),
-            title="Translate xx->xx",
-            input_message_content=InputTextMessageContent(
-                "{} .\n".format(retrive_definition(word=text, dst=custom_dst, src=custom_src)),
-                parse_mode=ParseMode.MARKDOWN))]
+                parse_mode=ParseMode.MARKDOWN))
+                           
+        #InlineQueryResultArticle(
+        #    id=uuid4(),
+        #    title="Translate xx->xx",
+        #    input_message_content=InputTextMessageContent(
+        #        "{} .\n".format(retrive_definition(word=text, dst=custom_dst, src=custom_src)),
+        #        parse_mode=ParseMode.MARKDOWN))
+           
+                ]
     
     update.inline_query.answer(results)
 
@@ -124,7 +130,6 @@ def error(bot, update, error):
 
 def main():
     updater = Updater(os.environ.get('TOKEN'))
-    
     dp = updater.dispatcher
 
     dp.add_handler(CommandHandler("start", start))
