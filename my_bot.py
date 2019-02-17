@@ -66,6 +66,9 @@ def echo_file(bot, update):
     os.remove('Translation.txt')
     os.remove('user_file.pdf')
     
+def elvira(bot, update):
+    update.message.reply_text("Привет от Петрухи из Киева, Эльвира!")
+
 def inlinequery(bot, update):
     query = update.inline_query.query
     
@@ -138,6 +141,7 @@ def main():
     dp.add_handler(CommandHandler("def", defenition, 
                                   pass_args=True,
                                   pass_chat_data=True))
+    dp.add_handler(CommandHandler("elvira", elvira))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_handler(MessageHandler(Filters.document, echo_file))
     dp.add_handler(InlineQueryHandler(inlinequery))
