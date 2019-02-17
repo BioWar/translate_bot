@@ -1,7 +1,10 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
 from translation import *
 from dict_json import *
+from constants import *
+from simple_cv import *
 
 import os
 from uuid import uuid4
@@ -11,7 +14,7 @@ from telegram import InlineQueryResultArticle, ParseMode, \
 from telegram.ext import Updater, InlineQueryHandler, CommandHandler, MessageHandler, Filters
 from PyPDF2 import PdfFileReader
 import logging
-from constants import *
+
 
 logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
                     level=logging.INFO)
@@ -39,6 +42,15 @@ def lang_code(bot, update):
 
 def echo(bot, update):
     update.message.reply_text(retrive_definition(word=update.message.text, dst='ru', src='auto'))
+    
+def echo_photo(bot, update):
+    user = update.message.from_user
+    photo_file = bot.get_file(update.message.photo[-1].file_id)
+    name = 'user_photo.jpg'
+    photo_file.download(name)
+    text = get_image_text(name)
+    update.message.reply_text(text)
+    os.remove(name)
     
 def echo_file(bot, update):
     user = update.message.from_user
@@ -144,6 +156,7 @@ def main():
     dp.add_handler(CommandHandler("elvira", elvira))
     dp.add_handler(MessageHandler(Filters.text, echo))
     dp.add_handler(MessageHandler(Filters.document, echo_file))
+    dp.add_handler(MessageHandler(Filters.photo, echo_photo))
     dp.add_handler(InlineQueryHandler(inlinequery))
 
     dp.add_error_handler(error)
