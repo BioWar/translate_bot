@@ -4,7 +4,7 @@ cffi==1.11.5
 cryptography==2.5
 Cython==0.29.5
 future==0.17.1
-numpy==1.16.1
+numpy==1.22.0
 opencv-python==4.0.0.21
 Pillow==6.2.0
 pycparser==2.19
